@@ -7,10 +7,6 @@ type LoginInput struct {
 	Password string `json:"password"`
 }
 
-type Token struct {
-	Jwt string `json:"jwt"`
-}
-
 type User struct {
 	ID       string `json:"id"`
 	Username string `json:"username"`

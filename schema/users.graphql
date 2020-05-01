@@ -10,10 +10,6 @@ input LoginInput {
       password: String!
 }
 
-type Token {
-     jwt: String!
-}
-
 type Query {
      user: User!
 }
