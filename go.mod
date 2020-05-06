@@ -5,6 +5,8 @@ go 1.14
 require (
 	github.com/99designs/gqlgen v0.11.3
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
+	github.com/gin-contrib/cors v1.3.1
+	github.com/gin-gonic/gin v1.6.3
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/matryer/moq v0.0.0-20200310130814-7721994d1b54 // indirect
