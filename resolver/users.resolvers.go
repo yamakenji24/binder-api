@@ -12,7 +12,11 @@ import (
 )
 
 func (r *mutationResolver) Login(ctx context.Context, input model.LoginInput) (string, error) {
-	panic(fmt.Errorf("not implemented"))
+	// mock data
+	if input.Username == "yamakenji24" {
+		return "jwt token will be returned", nil
+	}
+	return "", fmt.Errorf("not yamakenji")
 }
 
 func (r *queryResolver) User(ctx context.Context) (*model.User, error) {
