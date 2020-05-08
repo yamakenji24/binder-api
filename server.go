@@ -4,12 +4,12 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gin-gonic/gin"
-	"github.com/yamakenji24/binder-api/graph"
 	"github.com/yamakenji24/binder-api/graph/generated"
+	"github.com/yamakenji24/binder-api/resolver"
 )
 
 func graphqlHandler() gin.HandlerFunc {
-	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &resolver.Resolver{}}))
 
 	return func(c *gin.Context) {
 		h.ServeHTTP(c.Writer, c.Request)
@@ -22,7 +22,7 @@ func playgroundHandler() gin.HandlerFunc {
 		h.ServeHTTP(c.Writer, c.Request)
 	}
 }
-func GinContextToContextMiddleware() gin.HandleFunc {
+func GinContextToContextMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
 	}
@@ -31,7 +31,7 @@ func GinContextToContextMiddleware() gin.HandleFunc {
 func main() {
 	router := gin.Default()
 
-	router.USE(GinContextToContextMiddleware())
+	router.Use(GinContextToContextMiddleware())
 	router.POST("/query", graphqlHandler())
 	router.GET("/", playgroundHandler())
 	router.Run()
