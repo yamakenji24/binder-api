@@ -2,14 +2,14 @@
 
 package model
 
-type LoginInput struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
-type User struct {
+type GraphUser struct {
 	ID       string `json:"id"`
 	Username string `json:"username"`
 	Password string `json:"password"`
 	Email    string `json:"email"`
+}
+
+type LoginInput struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
