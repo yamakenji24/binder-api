@@ -6,9 +6,11 @@ package resolver
 import (
 	"context"
 	"fmt"
+	_ "strconv"
 
 	"github.com/yamakenji24/binder-api/graph/generated"
 	"github.com/yamakenji24/binder-api/graph/model"
+	"github.com/yamakenji24/binder-api/repository"
 )
 
 func (r *mutationResolver) Login(ctx context.Context, input model.LoginInput) (string, error) {
@@ -19,12 +21,13 @@ func (r *mutationResolver) Login(ctx context.Context, input model.LoginInput) (s
 	return "", fmt.Errorf("not yamakenji")
 }
 
-func (r *queryResolver) User(ctx context.Context) (*model.User, error) {
-	return &model.User{
-		ID: "1",
-		Username: "yamakenji24",
-		Password: "hogehoge",
-		Email: "yamakenji24@example.com",
+func (r *queryResolver) User(ctx context.Context, username string) (*model.GraphUser, error) {
+	user, _ := repository.GetUserByName(username)
+	return &model.GraphUser{
+		ID:       "1", //strconv.FormatUint(uint64(user.ID), 10),
+		Username: user.Username,
+		Password: user.Password,
+		Email:    user.Email,
 	}, nil
 }
 
