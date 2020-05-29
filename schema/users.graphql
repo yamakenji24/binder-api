@@ -1,4 +1,4 @@
-type User {
+type GraphUser {
      id: ID!
      username: String!
      password: String!
@@ -11,7 +11,7 @@ input LoginInput {
 }
 
 type Query {
-     user: User!
+     user(username: String!): GraphUser!
 }
 
 type Mutation {
