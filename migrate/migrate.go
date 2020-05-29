@@ -37,7 +37,7 @@ func main() {
 	db.AutoMigrate(&model.User{})
 
 	sampleUser := model.User{
-		Username:     "yamakenji24`",
+		Username:     "yamakenji24",
 		Password: toHashPassword("yamakenji24"),
 		Email:    "yamakenji24@example.com",
 	}
