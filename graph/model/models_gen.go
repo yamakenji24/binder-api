@@ -3,7 +3,7 @@
 package model
 
 type GraphDocument struct {
-	ID          string `json:"ID"`
+	ID          string `json:"id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	File        string `json:"file"`
@@ -17,7 +17,7 @@ type GraphUser struct {
 }
 
 type DocumentInput struct {
-	ID          string `json:"ID"`
+	ID          string `json:"id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	File        string `json:"file"`

@@ -1,12 +1,12 @@
 type GraphDocument {
-     ID: ID!
+     id: ID!
      title: String!
      description: String!
      file: String!
 }
 
 input documentInput {
-      ID: ID!
+      id: ID!
       title: String!
       description: String!
       file: String!

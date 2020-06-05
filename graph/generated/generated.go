@@ -98,7 +98,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.GraphDocument.File(childComplexity), true
 
-	case "GraphDocument.ID":
+	case "GraphDocument.id":
 		if e.complexity.GraphDocument.ID == nil {
 			break
 		}
@@ -215,14 +215,14 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 
 var sources = []*ast.Source{
 	&ast.Source{Name: "schema/documents.graphql", Input: `type GraphDocument {
-     ID: ID!
+     id: ID!
      title: String!
      description: String!
      file: String!
 }
 
 input documentInput {
-      ID: ID!
+      id: ID!
       title: String!
       description: String!
       file: String!
@@ -327,7 +327,7 @@ func (ec *executionContext) field_mutation_createDocument_args(ctx context.Conte
 
 // region    **************************** field.gotpl *****************************
 
-func (ec *executionContext) _GraphDocument_ID(ctx context.Context, field graphql.CollectedField, obj *model.GraphDocument) (ret graphql.Marshaler) {
+func (ec *executionContext) _GraphDocument_id(ctx context.Context, field graphql.CollectedField, obj *model.GraphDocument) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1811,7 +1811,7 @@ func (ec *executionContext) unmarshalInputdocumentInput(ctx context.Context, obj
 
 	for k, v := range asMap {
 		switch k {
-		case "ID":
+		case "id":
 			var err error
 			it.ID, err = ec.unmarshalNID2string(ctx, v)
 			if err != nil {
@@ -1860,8 +1860,8 @@ func (ec *executionContext) _GraphDocument(ctx context.Context, sel ast.Selectio
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("GraphDocument")
-		case "ID":
-			out.Values[i] = ec._GraphDocument_ID(ctx, field, obj)
+		case "id":
+			out.Values[i] = ec._GraphDocument_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
