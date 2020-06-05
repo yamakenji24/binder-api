@@ -35,6 +35,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Mutation() MutationResolver
 	Query() QueryResolver
 }
 
@@ -56,15 +57,18 @@ type ComplexityRoot struct {
 		Username func(childComplexity int) int
 	}
 
-	Query struct {
-		User func(childComplexity int, username string) int
-	}
-
 	Mutation struct {
 		CreateDocument func(childComplexity int, input model.DocumentInput) int
 	}
+
+	Query struct {
+		User func(childComplexity int, username string) int
+	}
 }
 
+type MutationResolver interface {
+	CreateDocument(ctx context.Context, input model.DocumentInput) (*model.GraphDocument, error)
+}
 type QueryResolver interface {
 	User(ctx context.Context, username string) (*model.GraphUser, error)
 }
@@ -140,6 +144,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.GraphUser.Username(childComplexity), true
 
+	case "Mutation.createDocument":
+		if e.complexity.Mutation.CreateDocument == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createDocument_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateDocument(childComplexity, args["input"].(model.DocumentInput)), true
+
 	case "Query.user":
 		if e.complexity.Query.User == nil {
 			break
@@ -151,18 +167,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.User(childComplexity, args["username"].(string)), true
-
-	case "mutation.createDocument":
-		if e.complexity.Mutation.CreateDocument == nil {
-			break
-		}
-
-		args, err := ec.field_mutation_createDocument_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.CreateDocument(childComplexity, args["input"].(model.DocumentInput)), true
 
 	}
 	return 0, false
@@ -181,6 +185,20 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 			}
 			first = false
 			data := ec._Query(ctx, rc.Operation.SelectionSet)
+			var buf bytes.Buffer
+			data.MarshalGQL(&buf)
+
+			return &graphql.Response{
+				Data: buf.Bytes(),
+			}
+		}
+	case ast.Mutation:
+		return func(ctx context.Context) *graphql.Response {
+			if !first {
+				return nil
+			}
+			first = false
+			data := ec._Mutation(ctx, rc.Operation.SelectionSet)
 			var buf bytes.Buffer
 			data.MarshalGQL(&buf)
 
@@ -228,7 +246,7 @@ input documentInput {
       file: String!
 }
 
-type mutation {
+type Mutation {
      createDocument(input: documentInput!): GraphDocument!
 }`, BuiltIn: false},
 	&ast.Source{Name: "schema/users.graphql", Input: `type GraphUser {
@@ -248,6 +266,20 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_createDocument_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.DocumentInput
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalNdocumentInput2githubᚗcomᚋyamakenji24ᚋbinderᚑapiᚋgraphᚋmodelᚐDocumentInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -302,20 +334,6 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 		}
 	}
 	args["includeDeprecated"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_mutation_createDocument_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 model.DocumentInput
-	if tmp, ok := rawArgs["input"]; ok {
-		arg0, err = ec.unmarshalNdocumentInput2githubᚗcomᚋyamakenji24ᚋbinderᚑapiᚋgraphᚋmodelᚐDocumentInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg0
 	return args, nil
 }
 
@@ -597,6 +615,47 @@ func (ec *executionContext) _GraphUser_email(ctx context.Context, field graphql.
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_createDocument(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createDocument_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateDocument(rctx, args["input"].(model.DocumentInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.GraphDocument)
+	fc.Result = res
+	return ec.marshalNGraphDocument2ᚖgithubᚗcomᚋyamakenji24ᚋbinderᚑapiᚋgraphᚋmodelᚐGraphDocument(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_user(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1760,47 +1819,6 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 	return ec.marshalO__Type2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _mutation_createDocument(ctx context.Context, field graphql.CollectedField, obj *model.Mutation) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "mutation",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_mutation_createDocument_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.CreateDocument, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*model.GraphDocument)
-	fc.Result = res
-	return ec.marshalNGraphDocument2ᚖgithubᚗcomᚋyamakenji24ᚋbinderᚑapiᚋgraphᚋmodelᚐGraphDocument(ctx, field.Selections, res)
-}
-
 // endregion **************************** field.gotpl *****************************
 
 // region    **************************** input.gotpl *****************************
@@ -1919,6 +1937,37 @@ func (ec *executionContext) _GraphUser(ctx context.Context, sel ast.SelectionSet
 			}
 		case "email":
 			out.Values[i] = ec._GraphUser_email(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var mutationImplementors = []string{"Mutation"}
+
+func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, mutationImplementors)
+
+	ctx = graphql.WithFieldContext(ctx, &graphql.FieldContext{
+		Object: "Mutation",
+	})
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Mutation")
+		case "createDocument":
+			out.Values[i] = ec._Mutation_createDocument(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -2207,33 +2256,6 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 			out.Values[i] = ec.___Type_inputFields(ctx, field, obj)
 		case "ofType":
 			out.Values[i] = ec.___Type_ofType(ctx, field, obj)
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
-var mutationImplementors = []string{"mutation"}
-
-func (ec *executionContext) _mutation(ctx context.Context, sel ast.SelectionSet, obj *model.Mutation) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, mutationImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("mutation")
-		case "createDocument":
-			out.Values[i] = ec._mutation_createDocument(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

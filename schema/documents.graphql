@@ -12,6 +12,6 @@ input documentInput {
       file: String!
 }
 
-type mutation {
+type Mutation {
      createDocument(input: documentInput!): GraphDocument!
 }

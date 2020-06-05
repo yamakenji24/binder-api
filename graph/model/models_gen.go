@@ -22,7 +22,3 @@ type DocumentInput struct {
 	Description string `json:"description"`
 	File        string `json:"file"`
 }
-
-type Mutation struct {
-	CreateDocument *GraphDocument `json:"createDocument"`
-}
