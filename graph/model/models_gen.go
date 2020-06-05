@@ -2,6 +2,13 @@
 
 package model
 
+type GraphDocument struct {
+	ID          string `json:"ID"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	File        string `json:"file"`
+}
+
 type GraphUser struct {
 	ID       string `json:"id"`
 	Username string `json:"username"`
@@ -9,7 +16,13 @@ type GraphUser struct {
 	Email    string `json:"email"`
 }
 
-type LoginInput struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+type DocumentInput struct {
+	ID          string `json:"ID"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	File        string `json:"file"`
+}
+
+type Mutation struct {
+	CreateDocument *GraphDocument `json:"createDocument"`
 }

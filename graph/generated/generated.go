@@ -42,6 +42,13 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	GraphDocument struct {
+		Description func(childComplexity int) int
+		File        func(childComplexity int) int
+		ID          func(childComplexity int) int
+		Title       func(childComplexity int) int
+	}
+
 	GraphUser struct {
 		Email    func(childComplexity int) int
 		ID       func(childComplexity int) int
@@ -51,6 +58,10 @@ type ComplexityRoot struct {
 
 	Query struct {
 		User func(childComplexity int, username string) int
+	}
+
+	Mutation struct {
+		CreateDocument func(childComplexity int, input model.DocumentInput) int
 	}
 }
 
@@ -72,6 +83,34 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "GraphDocument.description":
+		if e.complexity.GraphDocument.Description == nil {
+			break
+		}
+
+		return e.complexity.GraphDocument.Description(childComplexity), true
+
+	case "GraphDocument.file":
+		if e.complexity.GraphDocument.File == nil {
+			break
+		}
+
+		return e.complexity.GraphDocument.File(childComplexity), true
+
+	case "GraphDocument.ID":
+		if e.complexity.GraphDocument.ID == nil {
+			break
+		}
+
+		return e.complexity.GraphDocument.ID(childComplexity), true
+
+	case "GraphDocument.title":
+		if e.complexity.GraphDocument.Title == nil {
+			break
+		}
+
+		return e.complexity.GraphDocument.Title(childComplexity), true
 
 	case "GraphUser.email":
 		if e.complexity.GraphUser.Email == nil {
@@ -112,6 +151,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.User(childComplexity, args["username"].(string)), true
+
+	case "mutation.createDocument":
+		if e.complexity.Mutation.CreateDocument == nil {
+			break
+		}
+
+		args, err := ec.field_mutation_createDocument_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateDocument(childComplexity, args["input"].(model.DocumentInput)), true
 
 	}
 	return 0, false
@@ -163,6 +214,23 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
+	&ast.Source{Name: "schema/documents.graphql", Input: `type GraphDocument {
+     ID: ID!
+     title: String!
+     description: String!
+     file: String!
+}
+
+input documentInput {
+      ID: ID!
+      title: String!
+      description: String!
+      file: String!
+}
+
+type mutation {
+     createDocument(input: documentInput!): GraphDocument!
+}`, BuiltIn: false},
 	&ast.Source{Name: "schema/users.graphql", Input: `type GraphUser {
      id: ID!
      username: String!
@@ -170,15 +238,9 @@ var sources = []*ast.Source{
      email: String!
 }
 
-input LoginInput {
-      username: String!
-      password: String!
-}
-
 type Query {
      user(username: String!): GraphUser!
 }
-
 `, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -243,6 +305,20 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 	return args, nil
 }
 
+func (ec *executionContext) field_mutation_createDocument_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.DocumentInput
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalNdocumentInput2githubᚗcomᚋyamakenji24ᚋbinderᚑapiᚋgraphᚋmodelᚐDocumentInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 // endregion ***************************** args.gotpl *****************************
 
 // region    ************************** directives.gotpl **************************
@@ -250,6 +326,142 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _GraphDocument_ID(ctx context.Context, field graphql.CollectedField, obj *model.GraphDocument) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "GraphDocument",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _GraphDocument_title(ctx context.Context, field graphql.CollectedField, obj *model.GraphDocument) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "GraphDocument",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Title, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _GraphDocument_description(ctx context.Context, field graphql.CollectedField, obj *model.GraphDocument) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "GraphDocument",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Description, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _GraphDocument_file(ctx context.Context, field graphql.CollectedField, obj *model.GraphDocument) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "GraphDocument",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.File, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
 
 func (ec *executionContext) _GraphUser_id(ctx context.Context, field graphql.CollectedField, obj *model.GraphUser) (ret graphql.Marshaler) {
 	defer func() {
@@ -1548,25 +1760,78 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 	return ec.marshalO__Type2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _mutation_createDocument(ctx context.Context, field graphql.CollectedField, obj *model.Mutation) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_mutation_createDocument_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreateDocument, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.GraphDocument)
+	fc.Result = res
+	return ec.marshalNGraphDocument2ᚖgithubᚗcomᚋyamakenji24ᚋbinderᚑapiᚋgraphᚋmodelᚐGraphDocument(ctx, field.Selections, res)
+}
+
 // endregion **************************** field.gotpl *****************************
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputLoginInput(ctx context.Context, obj interface{}) (model.LoginInput, error) {
-	var it model.LoginInput
+func (ec *executionContext) unmarshalInputdocumentInput(ctx context.Context, obj interface{}) (model.DocumentInput, error) {
+	var it model.DocumentInput
 	var asMap = obj.(map[string]interface{})
 
 	for k, v := range asMap {
 		switch k {
-		case "username":
+		case "ID":
 			var err error
-			it.Username, err = ec.unmarshalNString2string(ctx, v)
+			it.ID, err = ec.unmarshalNID2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "password":
+		case "title":
 			var err error
-			it.Password, err = ec.unmarshalNString2string(ctx, v)
+			it.Title, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "description":
+			var err error
+			it.Description, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "file":
+			var err error
+			it.File, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -1583,6 +1848,48 @@ func (ec *executionContext) unmarshalInputLoginInput(ctx context.Context, obj in
 // endregion ************************** interface.gotpl ***************************
 
 // region    **************************** object.gotpl ****************************
+
+var graphDocumentImplementors = []string{"GraphDocument"}
+
+func (ec *executionContext) _GraphDocument(ctx context.Context, sel ast.SelectionSet, obj *model.GraphDocument) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, graphDocumentImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("GraphDocument")
+		case "ID":
+			out.Values[i] = ec._GraphDocument_ID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "title":
+			out.Values[i] = ec._GraphDocument_title(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "description":
+			out.Values[i] = ec._GraphDocument_description(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "file":
+			out.Values[i] = ec._GraphDocument_file(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
 
 var graphUserImplementors = []string{"GraphUser"}
 
@@ -1911,6 +2218,33 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 	return out
 }
 
+var mutationImplementors = []string{"mutation"}
+
+func (ec *executionContext) _mutation(ctx context.Context, sel ast.SelectionSet, obj *model.Mutation) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, mutationImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("mutation")
+		case "createDocument":
+			out.Values[i] = ec._mutation_createDocument(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 // endregion **************************** object.gotpl ****************************
 
 // region    ***************************** type.gotpl *****************************
@@ -1927,6 +2261,20 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNGraphDocument2githubᚗcomᚋyamakenji24ᚋbinderᚑapiᚋgraphᚋmodelᚐGraphDocument(ctx context.Context, sel ast.SelectionSet, v model.GraphDocument) graphql.Marshaler {
+	return ec._GraphDocument(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNGraphDocument2ᚖgithubᚗcomᚋyamakenji24ᚋbinderᚑapiᚋgraphᚋmodelᚐGraphDocument(ctx context.Context, sel ast.SelectionSet, v *model.GraphDocument) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._GraphDocument(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNGraphUser2githubᚗcomᚋyamakenji24ᚋbinderᚑapiᚋgraphᚋmodelᚐGraphUser(ctx context.Context, sel ast.SelectionSet, v model.GraphUser) graphql.Marshaler {
@@ -2195,6 +2543,10 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNdocumentInput2githubᚗcomᚋyamakenji24ᚋbinderᚑapiᚋgraphᚋmodelᚐDocumentInput(ctx context.Context, v interface{}) (model.DocumentInput, error) {
+	return ec.unmarshalInputdocumentInput(ctx, v)
 }
 
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
