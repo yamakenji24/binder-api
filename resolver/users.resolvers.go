@@ -13,6 +13,8 @@ import (
 )
 
 func (r *queryResolver) User(ctx context.Context, username string) (*model.GraphUser, error) {
+	userid := ctx.Value("userId")
+
 	user, err := repository.GetUserByName(username)
 	if err != nil {
 		return &model.GraphUser{}, err

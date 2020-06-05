@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -18,7 +19,14 @@ func graphqlHandler() gin.HandlerFunc {
 	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &resolver.Resolver{}}))
 
 	return func(c *gin.Context) {
-		h.ServeHTTP(c.Writer, c.Request)
+		r := c.Request
+		userId, exist := c.Get("userId")
+		if !exist {
+			h.ServeHTTP(c.Writer, c.Request)
+		} else {
+			ctx := context.WithValue(r.Context(), "userId", userId.(int))
+			h.ServeHTTP(c.Writer, r.WithContext(ctx))
+		}
 	}
 }
 func playgroundHandler() gin.HandlerFunc {
@@ -36,7 +44,7 @@ func GinContextToContextMiddleware() gin.HandlerFunc {
 
 func CheckJWTHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		header := c.GetHeader("authorization")
+		header := c.GetHeader("Authorization")
 		if len(header) == 0 {
 			c.Abort()
 		}
@@ -50,6 +58,10 @@ func CheckJWTHandler() gin.HandlerFunc {
 				"error": http.StatusText(http.StatusUnauthorized),
 			})
 			c.Abort()
+		} else {
+			claims := token.Claims.(jwt.MapClaims)
+			userId := int(claims["sub"].(float64))
+			c.Set("userId", userId)
 		}
 	}
 }
