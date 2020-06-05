@@ -2,3 +2,7 @@
 .envrc
 *.out
 *.exe
+.DS_Store
+
+rsa/private-key.pem
+rsa/public-key.pem
