@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/yamakenji24/binder-api/model"
@@ -37,13 +38,12 @@ func main() {
 	db.AutoMigrate(&model.User{})
 
 	sampleUser := model.User{
-		Username:     "yamakenji24",
+		Username: "yamakenji24",
 		Password: toHashPassword("yamakenji24"),
 		Email:    "yamakenji24@example.com",
 	}
 	db.Create(&sampleUser)
 }
-
 
 func toHashPassword(pass string) string {
 	converted, _ := bcrypt.GenerateFromPassword([]byte(pass), bcrypt.DefaultCost)
