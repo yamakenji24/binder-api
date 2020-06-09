@@ -22,7 +22,7 @@ func graphqlHandler() gin.HandlerFunc {
 		r := c.Request
 		userId, exist := c.Get("userId")
 		if !exist {
-			h.ServeHTTP(c.Writer, c.Request)
+			h.ServeHTTP(c.Writer, r)
 		} else {
 			ctx := context.WithValue(r.Context(), "userId", userId.(int))
 			h.ServeHTTP(c.Writer, r.WithContext(ctx))
