@@ -5,6 +5,7 @@ package resolver
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	"github.com/yamakenji24/binder-api/graph/generated"
@@ -14,7 +15,7 @@ import (
 
 func (r *queryResolver) User(ctx context.Context, username string) (*model.GraphUser, error) {
 	userid := ctx.Value("userId")
-
+	fmt.Println(userid)
 	user, err := repository.GetUserByName(username)
 	if err != nil {
 		return &model.GraphUser{}, err
