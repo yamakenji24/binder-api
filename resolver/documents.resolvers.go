@@ -12,7 +12,15 @@ import (
 )
 
 func (r *mutationResolver) CreateDocument(ctx context.Context, input model.DocumentInput) (*model.GraphDocument, error) {
-	panic(fmt.Errorf("not implemented"))
+	fmt.Println("calling createdocument")
+	fmt.Println(input)
+
+	return &model.GraphDocument{
+		ID:          "1",
+		Title:       input.Title,
+		Description: input.Description,
+		File:        input.File,
+	}, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.
