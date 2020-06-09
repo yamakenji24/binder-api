@@ -5,13 +5,12 @@ type GraphDocument {
      file: String!
 }
 
-input documentInput {
-      id: ID!
+input DocumentInput {
       title: String!
       description: String!
       file: String!
 }
 
 type Mutation {
-     createDocument(input: documentInput!): GraphDocument!
+     createDocument(input: DocumentInput!): GraphDocument!
 }

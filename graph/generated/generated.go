@@ -239,15 +239,14 @@ var sources = []*ast.Source{
      file: String!
 }
 
-input documentInput {
-      id: ID!
+input DocumentInput {
       title: String!
       description: String!
       file: String!
 }
 
 type Mutation {
-     createDocument(input: documentInput!): GraphDocument!
+     createDocument(input: DocumentInput!): GraphDocument!
 }`, BuiltIn: false},
 	&ast.Source{Name: "schema/users.graphql", Input: `type GraphUser {
      id: ID!
@@ -272,7 +271,7 @@ func (ec *executionContext) field_Mutation_createDocument_args(ctx context.Conte
 	args := map[string]interface{}{}
 	var arg0 model.DocumentInput
 	if tmp, ok := rawArgs["input"]; ok {
-		arg0, err = ec.unmarshalNdocumentInput2githubᚗcomᚋyamakenji24ᚋbinderᚑapiᚋgraphᚋmodelᚐDocumentInput(ctx, tmp)
+		arg0, err = ec.unmarshalNDocumentInput2githubᚗcomᚋyamakenji24ᚋbinderᚑapiᚋgraphᚋmodelᚐDocumentInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1823,18 +1822,12 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputdocumentInput(ctx context.Context, obj interface{}) (model.DocumentInput, error) {
+func (ec *executionContext) unmarshalInputDocumentInput(ctx context.Context, obj interface{}) (model.DocumentInput, error) {
 	var it model.DocumentInput
 	var asMap = obj.(map[string]interface{})
 
 	for k, v := range asMap {
 		switch k {
-		case "id":
-			var err error
-			it.ID, err = ec.unmarshalNID2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
 		case "title":
 			var err error
 			it.Title, err = ec.unmarshalNString2string(ctx, v)
@@ -2285,6 +2278,10 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) unmarshalNDocumentInput2githubᚗcomᚋyamakenji24ᚋbinderᚑapiᚋgraphᚋmodelᚐDocumentInput(ctx context.Context, v interface{}) (model.DocumentInput, error) {
+	return ec.unmarshalInputDocumentInput(ctx, v)
+}
+
 func (ec *executionContext) marshalNGraphDocument2githubᚗcomᚋyamakenji24ᚋbinderᚑapiᚋgraphᚋmodelᚐGraphDocument(ctx context.Context, sel ast.SelectionSet, v model.GraphDocument) graphql.Marshaler {
 	return ec._GraphDocument(ctx, sel, &v)
 }
@@ -2565,10 +2562,6 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 		}
 	}
 	return res
-}
-
-func (ec *executionContext) unmarshalNdocumentInput2githubᚗcomᚋyamakenji24ᚋbinderᚑapiᚋgraphᚋmodelᚐDocumentInput(ctx context.Context, v interface{}) (model.DocumentInput, error) {
-	return ec.unmarshalInputdocumentInput(ctx, v)
 }
 
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v interface{}) (bool, error) {

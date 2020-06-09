@@ -2,6 +2,12 @@
 
 package model
 
+type DocumentInput struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	File        string `json:"file"`
+}
+
 type GraphDocument struct {
 	ID          string `json:"id"`
 	Title       string `json:"title"`
@@ -14,11 +20,4 @@ type GraphUser struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 	Email    string `json:"email"`
-}
-
-type DocumentInput struct {
-	ID          string `json:"id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	File        string `json:"file"`
 }
