@@ -5,6 +5,7 @@ package resolver
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 
 	"github.com/yamakenji24/binder-api/graph/generated"
@@ -12,8 +13,9 @@ import (
 )
 
 func (r *mutationResolver) CreateDocument(ctx context.Context, input model.DocumentInput) (*model.GraphDocument, error) {
-	fmt.Println("calling createdocument")
-	fmt.Println(input)
+
+	decData := decodeFile(1, input.Title, input.File)
+	fmt.Println(decData)
 
 	return &model.GraphDocument{
 		ID:          "1",
@@ -27,3 +29,10 @@ func (r *mutationResolver) CreateDocument(ctx context.Context, input model.Docum
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
 type mutationResolver struct{ *Resolver }
+
+func decodeFile(id int, title string, file string) []byte {
+
+	data, _ := base64.StdEncoding.DecodeString(file)
+
+	return data
+}
