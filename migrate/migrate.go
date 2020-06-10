@@ -36,6 +36,7 @@ func main() {
 	}
 
 	db.AutoMigrate(&model.User{})
+	db.AutoMigrate(&model.Document{})
 
 	sampleUser := model.User{
 		Username: "yamakenji24",
