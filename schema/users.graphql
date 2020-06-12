@@ -5,12 +5,6 @@ type GraphUser {
      email: String!
 }
 
-input LoginInput {
-      username: String!
-      password: String!
-}
-
 type Query {
      user(username: String!): GraphUser!
 }
-

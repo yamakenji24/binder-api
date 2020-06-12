@@ -1,0 +1,16 @@
+type GraphDocument {
+     id: ID!
+     title: String!
+     description: String!
+     file: String!
+}
+
+input DocumentInput {
+      title: String!
+      description: String!
+      file: String!
+}
+
+type Mutation {
+     createDocument(input: DocumentInput!): GraphDocument!
+}
