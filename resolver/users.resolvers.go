@@ -7,7 +7,6 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/yamakenji24/binder-api/graph/generated"
 	"github.com/yamakenji24/binder-api/graph/model"
 	"github.com/yamakenji24/binder-api/repository"
 )
@@ -24,8 +23,3 @@ func (r *queryResolver) User(ctx context.Context, username string) (*model.Graph
 		Email:    user.Email,
 	}, nil
 }
-
-// Query returns generated.QueryResolver implementation.
-func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
-
-type queryResolver struct{ *Resolver }
