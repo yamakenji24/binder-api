@@ -15,3 +15,11 @@ func CreateNewDocument(userID int, title string, description string, filepath st
 	}
 	return &doc, nil
 }
+
+func GetAllDocument() (docs []*model.Document, err error) {
+	db := NewSQLHandler()
+	if err := db.Find(&docs).Error; err != nil {
+		return nil, err
+	}
+	return docs, nil
+}
