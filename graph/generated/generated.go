@@ -62,6 +62,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		Docs func(childComplexity int) int
 		User func(childComplexity int, username string) int
 	}
 }
@@ -70,6 +71,7 @@ type MutationResolver interface {
 	CreateDocument(ctx context.Context, input model.DocumentInput) (*model.GraphDocument, error)
 }
 type QueryResolver interface {
+	Docs(ctx context.Context) ([]*model.GraphDocument, error)
 	User(ctx context.Context, username string) (*model.GraphUser, error)
 }
 
@@ -155,6 +157,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateDocument(childComplexity, args["input"].(model.DocumentInput)), true
+
+	case "Query.docs":
+		if e.complexity.Query.Docs == nil {
+			break
+		}
+
+		return e.complexity.Query.Docs(childComplexity), true
 
 	case "Query.user":
 		if e.complexity.Query.User == nil {
@@ -245,7 +254,11 @@ input DocumentInput {
       file: String!
 }
 
-type Mutation {
+extend type Query {
+     docs: [GraphDocument!]!
+}
+
+extend type Mutation {
      createDocument(input: DocumentInput!): GraphDocument!
 }`, BuiltIn: false},
 	&ast.Source{Name: "schema/users.graphql", Input: `type GraphUser {
@@ -255,7 +268,7 @@ type Mutation {
      email: String!
 }
 
-type Query {
+extend type Query {
      user(username: String!): GraphUser!
 }
 `, BuiltIn: false},
@@ -655,6 +668,40 @@ func (ec *executionContext) _Mutation_createDocument(ctx context.Context, field 
 	res := resTmp.(*model.GraphDocument)
 	fc.Result = res
 	return ec.marshalNGraphDocument2ᚖgithubᚗcomᚋyamakenji24ᚋbinderᚑapiᚋgraphᚋmodelᚐGraphDocument(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_docs(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Docs(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.GraphDocument)
+	fc.Result = res
+	return ec.marshalNGraphDocument2ᚕᚖgithubᚗcomᚋyamakenji24ᚋbinderᚑapiᚋgraphᚋmodelᚐGraphDocumentᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_user(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1990,6 +2037,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
+		case "docs":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_docs(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "user":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -2284,6 +2345,43 @@ func (ec *executionContext) unmarshalNDocumentInput2githubᚗcomᚋyamakenji24�
 
 func (ec *executionContext) marshalNGraphDocument2githubᚗcomᚋyamakenji24ᚋbinderᚑapiᚋgraphᚋmodelᚐGraphDocument(ctx context.Context, sel ast.SelectionSet, v model.GraphDocument) graphql.Marshaler {
 	return ec._GraphDocument(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNGraphDocument2ᚕᚖgithubᚗcomᚋyamakenji24ᚋbinderᚑapiᚋgraphᚋmodelᚐGraphDocumentᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.GraphDocument) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNGraphDocument2ᚖgithubᚗcomᚋyamakenji24ᚋbinderᚑapiᚋgraphᚋmodelᚐGraphDocument(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
 }
 
 func (ec *executionContext) marshalNGraphDocument2ᚖgithubᚗcomᚋyamakenji24ᚋbinderᚑapiᚋgraphᚋmodelᚐGraphDocument(ctx context.Context, sel ast.SelectionSet, v *model.GraphDocument) graphql.Marshaler {

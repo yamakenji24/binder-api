@@ -5,6 +5,6 @@ type GraphUser {
      email: String!
 }
 
-type Query {
+extend type Query {
      user(username: String!): GraphUser!
 }

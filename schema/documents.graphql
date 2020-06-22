@@ -11,6 +11,10 @@ input DocumentInput {
       file: String!
 }
 
-type Mutation {
+extend type Query {
+     docs: [GraphDocument!]!
+}
+
+extend type Mutation {
      createDocument(input: DocumentInput!): GraphDocument!
 }
