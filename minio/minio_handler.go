@@ -13,22 +13,23 @@ var (
 	accessKey string
 	secretKey string
 	useSSL    bool
+	bucket    string
 )
 
 func NewMinioHandler() (*minio.Client, string) {
 	if minioClient != nil {
-		return minioClient
+		return minioClient, bucket
 	}
 
 	endpoint = os.Getenv("ENDPOINT")
 	accessKey = os.Getenv("ACCESSKEY")
 	secretKey = os.Getenv("SECRETKEY")
-	binder = os.Getenv("BUCKET")
+	bucket = os.Getenv("BUCKET")
 	useSSL = false
 	minioClient, err := minio.New(endpoint, accessKey, secretKey, useSSL)
 
 	if err != nil {
 		panic(err)
 	}
-	return minioClient, binder
+	return minioClient, bucket
 }
