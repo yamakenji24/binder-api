@@ -34,26 +34,55 @@ func (r *mutationResolver) CreateDocument(ctx context.Context, input model.Docum
 	}, nil
 }
 
-func (r *queryResolver) Docs(ctx context.Context) ([]*model.GraphDocument, error) {
+func (r *queryResolver) Docs(ctx context.Context, page *model.PaginationInput) (*model.DocumentConnection, error) {
 	docs, err := repository.GetAllDocument()
 	if err != nil {
-		return []*model.GraphDocument{}, err
+		return &model.DocumentConnection{}, err
 	}
 
-	graphDocs := make([]*model.GraphDocument, len(docs))
-	for i, doc := range docs {
-		docID := strconv.FormatUint(uint64(doc.ID), 10)
-		file := encodeFile(doc.FilePath, docID)
+	totalCount := len(docs)
+	start := 0
+	var endCursor string
 
-		graphDocs[i] = &model.GraphDocument{
-			ID:          docID,
-			Title:       doc.Title,
-			Description: doc.Description,
-			File:        file.String(),
+	if page.After != nil {
+		after, _ := base64.StdEncoding.DecodeString(*page.After)
+		afID, _ := strconv.ParseUint(string(after), 10, 64)
+		for i, doc := range docs {
+			if doc.ID == uint(afID) {
+				start = i + 1
+				break
+			}
 		}
 	}
+	pageDocs := docs[start : *page.First+start]
+	graphDocs := make([]*model.DocumentEdge, len(pageDocs))
 
-	return graphDocs, nil
+	for i, doc := range pageDocs {
+		docID := strconv.FormatUint(uint64(doc.ID), 10)
+		file := getFileURL(doc.FilePath)
+		endCursor = encodeToBase64(docID)
+
+		graphDocs[i] = &model.DocumentEdge{
+			Cursor: endCursor,
+			Node: &model.GraphDocument{
+				ID:          docID,
+				Title:       doc.Title,
+				Description: doc.Description,
+				File:        file.String(),
+			},
+		}
+	}
+	startCursor := encodeToBase64(strconv.FormatUint(uint64(pageDocs[0].ID), 10))
+	hasNextPage := (start + *page.First) < totalCount
+
+	return &model.DocumentConnection{
+		PageInfo: &model.PageInfo{
+			StartCursor: startCursor,
+			EndCursor:   endCursor,
+			HasNextPage: hasNextPage,
+		},
+		Edges: graphDocs,
+	}, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.
@@ -65,12 +94,14 @@ func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 
-func encodeFile(file_path string, docID string) *url.URL {
+func encodeToBase64(id string) string {
+	return base64.StdEncoding.EncodeToString([]byte(id))
+}
+func getFileURL(file_path string) *url.URL {
 	geneURL, _ := minio.GenerateURL(file_path)
 
 	return geneURL
 }
-
 func decodeFile(userid string, title string, inputfile string) (string, error) {
 	data, err := base64.StdEncoding.DecodeString(inputfile)
 	if err != nil {
