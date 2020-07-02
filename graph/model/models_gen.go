@@ -2,6 +2,32 @@
 
 package model
 
+type Connection interface {
+	IsConnection()
+}
+
+type Edge interface {
+	IsEdge()
+}
+
+type Node interface {
+	IsNode()
+}
+
+type DocumentConnection struct {
+	PageInfo *PageInfo       `json:"pageInfo"`
+	Edges    []*DocumentEdge `json:"edges"`
+}
+
+func (DocumentConnection) IsConnection() {}
+
+type DocumentEdge struct {
+	Cursor string         `json:"cursor"`
+	Node   *GraphDocument `json:"node"`
+}
+
+func (DocumentEdge) IsEdge() {}
+
 type DocumentInput struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
@@ -15,9 +41,25 @@ type GraphDocument struct {
 	File        string `json:"file"`
 }
 
+func (GraphDocument) IsNode() {}
+
 type GraphUser struct {
 	ID       string `json:"id"`
 	Username string `json:"username"`
 	Password string `json:"password"`
 	Email    string `json:"email"`
+}
+
+type PageInfo struct {
+	StartCursor     string `json:"startCursor"`
+	EndCursor       string `json:"endCursor"`
+	HasNextPage     bool   `json:"hasNextPage"`
+	HasPreviousPage bool   `json:"hasPreviousPage"`
+}
+
+type PaginationInput struct {
+	First  *int    `json:"first"`
+	Last   *int    `json:"last"`
+	Before *string `json:"before"`
+	After  *string `json:"after"`
 }
