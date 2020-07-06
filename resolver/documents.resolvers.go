@@ -14,6 +14,7 @@ import (
 	"github.com/yamakenji24/binder-api/graph/generated"
 	"github.com/yamakenji24/binder-api/graph/model"
 	"github.com/yamakenji24/binder-api/minio"
+	"github.com/yamakenji24/binder-api/models"
 	"github.com/yamakenji24/binder-api/repository"
 )
 
@@ -40,23 +41,52 @@ func (r *queryResolver) Docs(ctx context.Context, page *model.PaginationInput) (
 		return &model.DocumentConnection{}, err
 	}
 
-	totalCount := len(docs)
+	total := len(docs)
 	start := 0
-	var endCursor string
+	docLength := total
 
-	if page.After != nil {
-		after, _ := base64.StdEncoding.DecodeString(*page.After)
-		afID, _ := strconv.ParseUint(string(after), 10, 64)
-		for i, doc := range docs {
-			if doc.ID == uint(afID) {
-				start = i + 1
-				break
-			}
-		}
+	if page.First != nil {
+		docLength = *page.First
 	}
-	pageDocs := docs[start : *page.First+start]
-	graphDocs := make([]*model.DocumentEdge, len(pageDocs))
+	if page.Offset != nil {
+		start = *page.Offset
+	}
 
+	pageDocs := docs[start : start+docLength]
+	graphDocs, endCursor := handleCursor(pageDocs)
+
+	startCursor := encodeToBase64(strconv.FormatUint(uint64(pageDocs[0].ID), 10))
+	hasNextPage := (start + *page.First) < total
+
+	return &model.DocumentConnection{
+		PageInfo: &model.PageInfo{
+			StartCursor: startCursor,
+			EndCursor:   endCursor,
+			HasNextPage: hasNextPage,
+		},
+		Edges: graphDocs,
+		Total: strconv.Itoa(total),
+	}, nil
+}
+
+// Mutation returns generated.MutationResolver implementation.
+func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
+
+// Query returns generated.QueryResolver implementation.
+func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
+
+type mutationResolver struct{ *Resolver }
+type queryResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+func handleCursor(pageDocs []*models.Document) ([]*model.DocumentEdge, string) {
+	var endCursor string
+	graphDocs := make([]*model.DocumentEdge, len(pageDocs))
 	for i, doc := range pageDocs {
 		docID := strconv.FormatUint(uint64(doc.ID), 10)
 		file := getFileURL(doc.FilePath)
@@ -72,28 +102,8 @@ func (r *queryResolver) Docs(ctx context.Context, page *model.PaginationInput) (
 			},
 		}
 	}
-	startCursor := encodeToBase64(strconv.FormatUint(uint64(pageDocs[0].ID), 10))
-	hasNextPage := (start + *page.First) < totalCount
-
-	return &model.DocumentConnection{
-		PageInfo: &model.PageInfo{
-			StartCursor: startCursor,
-			EndCursor:   endCursor,
-			HasNextPage: hasNextPage,
-		},
-		Edges: graphDocs,
-	}, nil
+	return graphDocs, endCursor
 }
-
-// Mutation returns generated.MutationResolver implementation.
-func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
-
-// Query returns generated.QueryResolver implementation.
-func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
-
-type mutationResolver struct{ *Resolver }
-type queryResolver struct{ *Resolver }
-
 func encodeToBase64(id string) string {
 	return base64.StdEncoding.EncodeToString([]byte(id))
 }
