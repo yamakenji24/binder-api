@@ -20,4 +20,5 @@ input PaginationInput {
     last: Int
     before: String
     after: String
+    offset: Int
 }

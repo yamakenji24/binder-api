@@ -47,6 +47,7 @@ type ComplexityRoot struct {
 	DocumentConnection struct {
 		Edges    func(childComplexity int) int
 		PageInfo func(childComplexity int) int
+		Total    func(childComplexity int) int
 	}
 
 	DocumentEdge struct {
@@ -121,6 +122,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.DocumentConnection.PageInfo(childComplexity), true
+
+	case "DocumentConnection.total":
+		if e.complexity.DocumentConnection.Total == nil {
+			break
+		}
+
+		return e.complexity.DocumentConnection.Total(childComplexity), true
 
 	case "DocumentEdge.cursor":
 		if e.complexity.DocumentEdge.Cursor == nil {
@@ -333,6 +341,7 @@ type DocumentEdge implements Edge {
 type DocumentConnection implements Connection {
     pageInfo: PageInfo!
     edges: [DocumentEdge]!
+    total: String!
 }
 input DocumentInput {
     title: String!
@@ -369,6 +378,7 @@ input PaginationInput {
     last: Int
     before: String
     after: String
+    offset: Int
 }`, BuiltIn: false},
 	&ast.Source{Name: "schema/users.graphql", Input: `type GraphUser {
      id: ID!
@@ -546,6 +556,40 @@ func (ec *executionContext) _DocumentConnection_edges(ctx context.Context, field
 	res := resTmp.([]*model.DocumentEdge)
 	fc.Result = res
 	return ec.marshalNDocumentEdge2ᚕᚖgithubᚗcomᚋyamakenji24ᚋbinderᚑapiᚋgraphᚋmodelᚐDocumentEdge(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DocumentConnection_total(ctx context.Context, field graphql.CollectedField, obj *model.DocumentConnection) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "DocumentConnection",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Total, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _DocumentEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *model.DocumentEdge) (ret graphql.Marshaler) {
@@ -2331,6 +2375,12 @@ func (ec *executionContext) unmarshalInputPaginationInput(ctx context.Context, o
 			if err != nil {
 				return it, err
 			}
+		case "offset":
+			var err error
+			it.Offset, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -2411,6 +2461,11 @@ func (ec *executionContext) _DocumentConnection(ctx context.Context, sel ast.Sel
 			}
 		case "edges":
 			out.Values[i] = ec._DocumentConnection_edges(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "total":
+			out.Values[i] = ec._DocumentConnection_total(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}

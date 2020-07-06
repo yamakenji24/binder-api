@@ -11,6 +11,7 @@ type DocumentEdge implements Edge {
 type DocumentConnection implements Connection {
     pageInfo: PageInfo!
     edges: [DocumentEdge]!
+    total: String!
 }
 input DocumentInput {
     title: String!

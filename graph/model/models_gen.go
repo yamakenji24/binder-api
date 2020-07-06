@@ -17,6 +17,7 @@ type Node interface {
 type DocumentConnection struct {
 	PageInfo *PageInfo       `json:"pageInfo"`
 	Edges    []*DocumentEdge `json:"edges"`
+	Total    string          `json:"total"`
 }
 
 func (DocumentConnection) IsConnection() {}
@@ -62,4 +63,5 @@ type PaginationInput struct {
 	Last   *int    `json:"last"`
 	Before *string `json:"before"`
 	After  *string `json:"after"`
+	Offset *int    `json:"offset"`
 }
