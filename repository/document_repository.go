@@ -1,10 +1,10 @@
 package repository
 
-import "github.com/yamakenji24/binder-api/model"
+import "github.com/yamakenji24/binder-api/models"
 
-func CreateNewDocument(userID int, title string, description string, filepath string) (*model.Document, error) {
+func CreateNewDocument(userID int, title string, description string, filepath string) (*models.Document, error) {
 	db := NewSQLHandler()
-	doc := model.Document{
+	doc := models.Document{
 		UserID:      userID,
 		Title:       title,
 		Description: description,
@@ -14,4 +14,12 @@ func CreateNewDocument(userID int, title string, description string, filepath st
 		return nil, err
 	}
 	return &doc, nil
+}
+
+func GetAllDocument() (docs []*models.Document, err error) {
+	db := NewSQLHandler()
+	if err := db.Find(&docs).Error; err != nil {
+		return nil, err
+	}
+	return docs, nil
 }

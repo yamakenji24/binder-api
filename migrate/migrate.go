@@ -6,7 +6,7 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/yamakenji24/binder-api/model"
+	"github.com/yamakenji24/binder-api/models"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -35,10 +35,10 @@ func main() {
 		fmt.Println("Successful connection")
 	}
 
-	db.AutoMigrate(&model.User{})
-	db.AutoMigrate(&model.Document{})
+	db.AutoMigrate(&models.User{})
+	db.AutoMigrate(&models.Document{})
 
-	sampleUser := model.User{
+	sampleUser := models.User{
 		Username: "yamakenji24",
 		Password: toHashPassword("yamakenji24"),
 		Email:    "yamakenji24@example.com",
