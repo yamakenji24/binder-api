@@ -5,5 +5,4 @@
 .DS_Store
 
 document/*.pdf
-rsa/private-key.pem
-rsa/public-key.pem
+rsa/*
